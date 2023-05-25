@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+
+    <title>PA#1</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+    <script src="./Utils/trackball-rotator.js"></script>
+    <script src="./Utils/m4.js"></script>
+    <script src="./shader.gpu"></script>
+    <script src="./camera.js"></script>
+    <script src="./main.js"></script>
+
+</head>
+
+<body onload="init()">
+
+    <h2 class="m-3" style="text-align: center;">TR-23mp Bondarchuk Oleksandr | Practical assignment #1 (Variant 3)</h2>
+
+    <div class="container mt-5">
+        <div class="row align-items-center">
+            <div class="col">
+                <div class="me-5">
+
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="flexRadioDefault" id="img_radio" value="img" checked>
+                        <label class="form-check-label" for="img_radio">
+                            Image
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="flexRadioDefault" id="vid_radio" value="vid">
+                        <label class="form-check-label" for="vid_radio">
+                            Video
+                        </label>
+                    </div>
+
+
+                    <div class="card mt-3 mb-2" style="width: 12rem;" id="image_div">
+                        <img class="card-img-top">
+                        <div class="card-body">
+                            <div class="">
+                                <label for="texture_image" class="btn btn-secondary">IMG</label>
+                                <input class="form-control" type="file" style="display:none" id="texture_image" accept=".png, .jpg, .jpeg, .webp">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mt-3 mb-2" style="width: 12rem;" id="video_div">
+                        <video class="card-img-top" autoplay loop></video>
+                        <div class="card-body">
+                            <div class="">
+                                <label for="texture_video" class="btn btn-secondary">VIDEO</label>
+                                <input class="form-control" type="file" style="display:none" id="texture_video" accept=".mp4" disabled>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col me-3">
+                <div id="canvas-holder">
+                    <canvas class="rounded-3" width="580" height="435" id="webglcanvas" style="background-color: gray"></canvas>
+                </div>
+            </div>
+            <div class="col">
+                <div class="me-5">
+                    <div class="input-group mb-1">
+                        <span class="input-group-text">X</span>
+                        <input id="World_X" type="number" class="form-control h-auto d-inline-block" aria-describedby="World_X" value="-1" step="0.1">
+                    </div>
+                    <div class="input-group mb-1">
+                        <span class="input-group-text">Y</span>
+                        <input id="World_Y" type="number" class="form-control h-auto d-inline-block" aria-describedby="World_Y" value="0" step="0.1">
+                    </div>
+                    <div class="input-group mb-2">
+                        <span class="input-group-text">Z</span>
+                        <input id="World_Z" type="number" class="form-control h-auto d-inline-block" aria-describedby="World_Z" value="-40" step="0.1">
+                    </div>
+
+                    <label for="SeparationValue" class="form-label">Eye separation:</label>
+                    <span class="badge bg-primary" id="SeparationValue_text">0.4</span>
+                    <input type="range" class="form-range" min="-1" max="1" step="0.1" id="SeparationValue" value="0.4">
+                    <label for="Field" class="form-label">Field of View:</label>
+                    <span class="badge bg-primary" id="Field_text">1</span>
+                    <input type="range" class="form-range" min="0.2" max="1.5" step="0.02" id="Field" value="1">
+
+                    <label for="c_distance" class="form-label">Niar Clipping distance:</label>
+                    <span class="badge bg-primary" id="c_distance_text">4</span>
+                    <input type="range" class="form-range" min="1.5" max="8.1" step="0.33" id="c_distance" value="4">
+                    <label for="co_distance" class="form-label">Convergence distance:</label>
+                    <span class="badge bg-primary" id="co_distance_text">5</span>
+                    <input type="range" class="form-range" min="1" max="15" step="0.1" id="co_distance" value="5">
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+<script>
+    $('#video_div').hide();
+    document.querySelector("img").src = image_src;
+    $(document).ready(function() {
+        if (document.querySelector('input[name="flexRadioDefault"]')) {
+            document.querySelectorAll('input[name="flexRadioDefault"]').forEach((elem) => {
+                elem.addEventListener("change", function(event) {
+                    var item = event.target.value;
+                    if (item == "img") {
+                        texture_type = "image";
+                        $('#image_div').show();
+                        $('#video_div').hide();
+                        $('#image_div *').prop('disabled', false);
+                        $('#video_div *').prop('disabled', true);
+                        document.querySelector("img").src = image_src;
+                        document.querySelector("video").src = "";
+                        document.getElementById("texture_video").value = "";
+                        init();
+                    } else {
+                        texture_type = "video";
+                        $('#image_div').hide();
+                        $('#video_div').show();
+                        $('#image_div *').prop('disabled', true);
+                        $('#video_div *').prop('disabled', false);
+                        document.querySelector("video").src = video_src;
+                        document.querySelector("img").src = "";
+                        document.getElementById("texture_image").value = "";
+                        init();
+                    }
+                });
+            });
+        }
+    });
+
+
+    var input_x = document.getElementById("World_X");
+    var input_y = document.getElementById("World_Y");
+    var input_z = document.getElementById("World_Z");
+    var input_sv = document.getElementById("SeparationValue");
+    var input_f = document.getElementById("Field");
+    var input_c = document.getElementById("c_distance");
+    var input_co = document.getElementById("co_distance");
+
+    input_x.addEventListener("input", function() {
+        World_X = this.value;
+        draw();
+    }, false);
+
+    input_y.addEventListener("input", function() {
+        World_Y = this.value;
+        draw();
+    }, false);
+
+    input_z.addEventListener("input", function() {
+        World_Z = this.value;
+        draw();
+    }, false);
+
+    input_sv.addEventListener("input", function() {
+        SValue = this.value;
+        stereoCamera.mEyeSeparation = SValue;
+        document.getElementById("SeparationValue_text").innerHTML = SValue;
+        draw();
+    }, false);
+
+    input_f.addEventListener("input", function() {
+        Field = this.value;
+        stereoCamera.mFOV = Field;
+        document.getElementById("Field_text").innerHTML = Field;
+        draw();
+    }, false);
+
+    input_c.addEventListener("input", function() {
+        c_distance = this.value;
+        stereoCamera.mNearClippingDistance = c_distance;
+        document.getElementById("c_distance_text").innerHTML = c_distance;
+        draw();
+    }, false);
+
+    input_co.addEventListener("input", function() {
+        co_distance = this.value;
+        stereoCamera.mConvergence = co_distance;
+        document.getElementById("co_distance_text").innerHTML = co_distance;
+        draw();
+    }, false);
+
+    document.getElementById("texture_image")
+        .onchange = function(event) {
+            let file = event.target.files[0];
+            let blobURL = URL.createObjectURL(file);
+            document.querySelector("img").src = blobURL;
+            image_src = blobURL;
+            init();
+        }
+
+    document.getElementById("texture_video")
+        .onchange = function(event) {
+            let file = event.target.files[0];
+            let blobURL = URL.createObjectURL(file);
+            document.querySelector("video").src = blobURL;
+            video_src = blobURL;
+            init();
+        }
+
+</script>
+
+</html>
