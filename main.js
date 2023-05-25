@@ -30,6 +30,99 @@ let image;
 
 let stereoCamera = new StereoCamera(5, 0.4, 1, 1, 4, 100);
 
+let timeStamp;
+let deltaRotationMatrix = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+let alpha = 0,
+    beta = 0,
+    gamma = 0,
+    x,
+    y,
+    z;
+const EPSILON = 0.001;
+const MS2S = 1.0 / 1000.0;
+
+function readGyroscope() {
+    if (window.DeviceOrientationEvent) {
+        timeStamp = Date.now();
+        let sensor = new Gyroscope({
+            frequency: 60
+        });
+        sensor.addEventListener('reading', e => {
+            x = sensor.x
+            y = sensor.y
+            z = sensor.z
+        });
+        sensor.start();
+    } else alert('Gyroscope not supported');
+
+}
+
+function gyroToMat() {
+    if (x != null) {
+        let dT = (Date.now() - timeStamp) * MS2S;
+        let omegaMagnitude = Math.sqrt(x * x, y * y, z * z);
+        if (omegaMagnitude > EPSILON) {
+            alpha += x * dT
+            beta += y * dT
+            gamma += z * dT
+            alpha = Math.min(Math.max(alpha, -Math.PI * 0.25), Math.PI * 0.25)
+            beta = Math.min(Math.max(beta, -Math.PI * 0.25), Math.PI * 0.25)
+            gamma = Math.min(Math.max(gamma, -Math.PI * 0.25), Math.PI * 0.25)
+
+            let deltaRotationVector = [];
+
+            deltaRotationVector.push(alpha);
+            deltaRotationVector.push(beta);
+            deltaRotationVector.push(gamma);
+
+            deltaRotationMatrix = getRotationMatrixFromVector(deltaRotationVector)
+
+            timeStamp = Date.now();
+        }
+    }
+}
+
+function getRotationMatrixFromVector(rotationVector) {
+    const q1 = rotationVector[0];
+    const q2 = rotationVector[1];
+    const q3 = rotationVector[2];
+    let q0;
+
+    if (rotationVector.length >= 4) {
+        q0 = rotationVector[3];
+    } else {
+        q0 = 1 - q1 * q1 - q2 * q2 - q3 * q3;
+        q0 = q0 > 0 ? Math.sqrt(q0) : 0;
+    }
+    const sq_q1 = 2 * q1 * q1;
+    const sq_q2 = 2 * q2 * q2;
+    const sq_q3 = 2 * q3 * q3;
+    const q1_q2 = 2 * q1 * q2;
+    const q3_q0 = 2 * q3 * q0;
+    const q1_q3 = 2 * q1 * q3;
+    const q2_q0 = 2 * q2 * q0;
+    const q2_q3 = 2 * q2 * q3;
+    const q1_q0 = 2 * q1 * q0;
+    let R = [];
+    R.push(1 - sq_q2 - sq_q3);
+    R.push(q1_q2 - q3_q0);
+    R.push(q1_q3 + q2_q0);
+    R.push(0.0);
+    R.push(q1_q2 + q3_q0);
+    R.push(1 - sq_q1 - sq_q3);
+    R.push(q2_q3 - q1_q0);
+    R.push(0.0);
+    R.push(q1_q3 - q2_q0);
+    R.push(q2_q3 + q1_q0);
+    R.push(1 - sq_q1 - sq_q2);
+    R.push(0.0);
+    R.push(0.0);
+    R.push(0.0);
+    R.push(0.0);
+    R.push(1.0);
+    return R;
+}
+
 function deg2rad(angle) {
     return angle * Math.PI / 180;
 }
@@ -84,7 +177,7 @@ function ShaderProgram(name, program) {
 function draw() {
     gl.clearColor(0, 0, 0, 1);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
+    gyroToMat();
     DrawWebCamVideo();
 
     gl.clear(gl.DEPTH_BUFFER_BIT);
@@ -97,10 +190,11 @@ function draw() {
     gl.colorMask(false, true, true, false);
     DrawSurface();
     gl.colorMask(true, true, true, true);
+    gyroToMat();
 }
 
 function DrawSurface() {
-    let modelView = spaceball.getViewMatrix();
+    let modelView = deltaRotationMatrix;
     let translateToPointZero = m4.translation(World_X, World_Y, World_Z);
 
     gl.uniformMatrix4fv(shProgram.iModelViewProjectionMatrix, false, m4.multiply(stereoCamera.mModelViewMatrix, m4.multiply(m4.multiply(stereoCamera.mProjectionMatrix, translateToPointZero), modelView)));
@@ -258,6 +352,9 @@ function createProgram(gl, vShader, fShader) {
 }
 
 function init() {
+
+    readGyroscope();
+    gyroToMat();
     try {
         canvas = document.getElementById("webglcanvas");
 
@@ -298,6 +395,7 @@ function init() {
         canvas.width = stream_width;
         canvas.height = stream_height;
         gl.viewport(0, 0, stream_width, stream_height);
+
     }, function (e) {
         console.error('Rejected!', e);
     });
