@@ -1,3 +1,4 @@
 # MSVR (METHOD OF SYNTHESIS OF VIRTUAL REALITY)
+CGW (Spatial audio)
 
 Varian - #3
