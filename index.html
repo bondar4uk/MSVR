@@ -3,12 +3,13 @@
 
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link rel="icon" type="image/x-icon" href="/texture/Equalizer.png">
 
-
-    <title>PA#1</title>
+    <title>GW</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.7.1/nipplejs.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
     <script src="./Utils/trackball-rotator.js"></script>
     <script src="./Utils/m4.js"></script>
@@ -20,71 +21,59 @@
 
 <body onload="init()">
 
-    <h2 class="m-3" style="text-align: center;">TR-23mp Bondarchuk Oleksandr | Practical assignment #1 (Variant 3)</h2>
+    <h2 class="m-3" style="text-align: center;">TR-23mp Bondarchuk Oleksandr | Calculation and graphics work (Variant 3)</h2>
 
-    <div class="container mt-5">
+    <div class="container mt-3">
         <div class="row align-items-center">
-            <div class="col">
-                <div class="me-5">
-
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="flexRadioDefault" id="img_radio" value="img" checked>
-                        <label class="form-check-label" for="img_radio">
-                            Image
-                        </label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="flexRadioDefault" id="vid_radio" value="vid">
-                        <label class="form-check-label" for="vid_radio">
-                            Video
-                        </label>
-                    </div>
+            <div class="col" style="margin-left: -100px; max-width: 250px">
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="flexRadioDefault" id="img_radio" value="img" checked>
+                    <label class="form-check-label" for="img_radio">
+                        Image
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="flexRadioDefault" id="vid_radio" value="vid">
+                    <label class="form-check-label" for="vid_radio">
+                        Video
+                    </label>
+                </div>
 
 
-                    <div class="card mt-3 mb-2" style="width: 12rem;" id="image_div">
-                        <img class="card-img-top">
-                        <div class="card-body">
-                            <div class="">
-                                <label for="texture_image" class="btn btn-secondary">IMG</label>
-                                <input class="form-control" type="file" style="display:none" id="texture_image" accept=".png, .jpg, .jpeg, .webp">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="card mt-3 mb-2" style="width: 12rem;" id="video_div">
-                        <video class="card-img-top" autoplay loop></video>
-                        <div class="card-body">
-                            <div class="">
-                                <label for="texture_video" class="btn btn-secondary">VIDEO</label>
-                                <input class="form-control" type="file" style="display:none" id="texture_video" accept=".mp4" disabled>
-                            </div>
+                <div class="card mt-3 mb-2" id="image_div">
+                    <img class="card-img-top">
+                    <div class="card-body">
+                        <div class="">
+                            <label for="texture_image" class="btn btn-secondary">IMG</label>
+                            <input class="form-control" type="file" style="display:none" id="texture_image" accept=".png, .jpg, .jpeg, .webp">
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="col me-3">
-                <div id="canvas-holder">
-                    <canvas class="rounded-3" width="580" height="435" id="webglcanvas" style="background-color: gray"></canvas>
+
+                <div class="card mt-3 mb-2" id="video_div">
+                    <video class="card-img-top" autoplay loop></video>
+                    <div class="card-body">
+                        <div class="">
+                            <label for="texture_video" class="btn btn-secondary">VIDEO</label>
+                            <input class="form-control" type="file" style="display:none" id="texture_video" accept=".mp4" disabled>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mt-3 mb-2">
+                    <audio id="audio" class="audio-player" loop>
+                        <source src="audio/audio.mp3" id="audioSource" type="audio/mpeg" />
+                        Your browser does not support the audio element.
+                    </audio>
+                    <button type="button" class="btn btn-primary" onclick="triggerFileInput()">AUDIO</button>
+                    <input type="file" id="audioFileInput" accept="audio/*" onchange="changeAudio()" style="display: none;" />
                 </div>
             </div>
-            <div class="col">
+            <div class="col" style="margin-right: -50px">
                 <div class="me-5">
-                    <div class="input-group mb-1">
-                        <span class="input-group-text">X</span>
-                        <input id="World_X" type="number" class="form-control h-auto d-inline-block" aria-describedby="World_X" value="-1" step="0.1">
-                    </div>
-                    <div class="input-group mb-1">
-                        <span class="input-group-text">Y</span>
-                        <input id="World_Y" type="number" class="form-control h-auto d-inline-block" aria-describedby="World_Y" value="0" step="0.1">
-                    </div>
-                    <div class="input-group mb-2">
-                        <span class="input-group-text">Z</span>
-                        <input id="World_Z" type="number" class="form-control h-auto d-inline-block" aria-describedby="World_Z" value="-40" step="0.1">
-                    </div>
-
                     <label for="SeparationValue" class="form-label">Eye separation:</label>
-                    <span class="badge bg-primary" id="SeparationValue_text">0.4</span>
-                    <input type="range" class="form-range" min="-1" max="1" step="0.1" id="SeparationValue" value="0.4">
+                    <span class="badge bg-primary" id="SeparationValue_text">0</span>
+                    <input type="range" class="form-range" min="-1" max="1" step="0.1" id="SeparationValue" value="0">
                     <label for="Field" class="form-label">Field of View:</label>
                     <span class="badge bg-primary" id="Field_text">1</span>
                     <input type="range" class="form-range" min="0.2" max="1.5" step="0.02" id="Field" value="1">
@@ -96,6 +85,88 @@
                     <span class="badge bg-primary" id="co_distance_text">5</span>
                     <input type="range" class="form-range" min="1" max="15" step="0.1" id="co_distance" value="5">
                 </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="CameraCheckbox">
+                    <label class="form-check-label" for="CameraCheckbox">
+                        Camera
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="SpaceballCheckbox">
+                    <label class="form-check-label" for="SpaceballCheckbox">
+                        Spaceball
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="GyroscopeCheckbox">
+                    <label class="form-check-label" for="GyroscopeCheckbox">
+                        Gyroscope
+                    </label>
+                </div>
+            </div>
+            <div class="col">
+                <div id="canvas-holder">
+                    <canvas class="rounded-3" width="580" height="435" id="webglcanvas" style="background-color: gray"></canvas>
+                </div>
+            </div>
+            <div class="col" style="margin-right: -105px">
+                <div class="me-5">
+                    <div class="card mb-3">
+                        <div class="card-body" style="margin-bottom: -10px">
+                            <h5 class="card-title">Sphere coordinates:</h5>
+                            <div id="coordinates_get">
+                                <label for="World_X" class="form-label">Sphere X:</label>
+                                <span class="badge bg-primary" id="World_X_text">0</span>
+                                <input type="range" class="form-range" min="-1" max="1" step="0.1" id="World_X" value="0">
+
+                                <label for="World_Y" class="form-label">Sphere Y:</label>
+                                <span class="badge bg-primary" id="World_Y_text">0</span>
+                                <input type="range" class="form-range" min="-1" max="1" step="0.1" id="World_Y" value="0">
+
+                                <label for="World_Z" class="form-label">Sphere Z:</label>
+                                <span class="badge bg-primary" id="World_Z_text">0</span>
+                                <input type="range" class="form-range" min="-1" max="1" step="0.1" id="World_Z" value="0">
+                            </div>
+                            <label for="Radius" class="form-label">Radius:</label>
+                            <span class="badge bg-primary" id="Radius_text">1.5</span>
+                            <input type="range" class="form-range" min="0.5" max="3" step="0.1" id="Radius" value="1.5" disabled>
+                        </div>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="" id="toggleCheckbox">
+                        <label class="form-check-label" for="toggleCheckbox">
+                            Animation
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="" id="filter_check" checked>
+                        <label class="form-check-label" for="filter_check">
+                            Band-pass filter
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="" id="reverbCheckbox" checked>
+                        <label class="form-check-label" for="reverbCheckbox">
+                            Reverb
+                        </label>
+                    </div>
+
+                    <label for="Volume" class="form-label">Volume:</label>
+                    <span class="badge bg-primary" id="Volume_text">1</span>
+                    <input type="range" class="form-range" min="0" max="1" step="0.1" id="Volume" value="1">
+
+                    <label for="PlaybackRate" class="form-label">PlaybackRate:</label>
+                    <span class="badge bg-primary" id="PlaybackRate_text">1</span>
+                    <input type="range" class="form-range" min="0.2" max="2" step="0.1" id="PlaybackRate" value="1">
+
+                    <label for="Q_value" class="form-label">Q value (bandwidth):</label>
+                    <span class="badge bg-primary" id="Q_value_text">5</span>
+                    <input type="range" class="form-range" min="0.1" max="10" step="0.1" id="Q_value" value="5">
+
+                    <label for="centerFrequencyInput" class="form-label">Frequency:</label>
+                    <span class="badge bg-primary" id="centerFrequencyInput_text">1000</span>
+                    <input type="range" class="form-range" min="0" max="22050" step="10" id="centerFrequencyInput" value="1000">
+                </div>
             </div>
         </div>
     </div>
@@ -103,6 +174,119 @@
 </body>
 
 <script>
+    let ind = false;
+    let camera_ind = false;
+    let rotate_spaceball = false;
+    let GyroscopeRotate = false;
+    let radius = 1.5;
+    const toggleCheckbox = document.getElementById("toggleCheckbox");
+
+    toggleCheckbox.addEventListener("change", function() {
+        if (toggleCheckbox.checked) {
+            $('#coordinates_get *').prop('disabled', true);
+            $('#Radius').prop('disabled', false);
+            moveInCircle();
+            ind = true;
+        } else {
+            $('#coordinates_get *').prop('disabled', false);
+            $('#Radius').prop('disabled', true);
+            ind = false;
+        }
+    });
+
+    const CameraCheckbox = document.getElementById("CameraCheckbox");
+
+    CameraCheckbox.addEventListener("change", function() {
+        if (CameraCheckbox.checked) {
+            camera_ind = true;
+        } else {
+            camera_ind = false;
+        }
+    });
+
+    const SpaceballCheckbox = document.getElementById("SpaceballCheckbox");
+
+    SpaceballCheckbox.addEventListener("change", function() {
+        if (SpaceballCheckbox.checked) {
+            rotate_spaceball = true;
+        } else {
+            rotate_spaceball = false;
+        }
+    });
+
+    const GyroscopeCheckbox = document.getElementById("GyroscopeCheckbox");
+
+    GyroscopeCheckbox.addEventListener("change", function() {
+        if (GyroscopeCheckbox.checked) {
+            GyroscopeRotate = true;
+            $('#coordinates_get *').prop('disabled', true);
+            $('#Radius').prop('disabled', true);
+            $('#toggleCheckbox').prop('disabled', true);
+            document.getElementById('toggleCheckbox').checked = false;
+            ind = false;
+        } else {
+            GyroscopeRotate = false;
+            $('#coordinates_get *').prop('disabled', false);
+            $('#toggleCheckbox').prop('disabled', false);
+        }
+    });
+
+    function moveInCircle() {
+        let angle = 0;
+
+        function animate() {
+
+            World_X = Math.cos(angle) * radius;
+            World_Y = Math.sin(angle) * radius;
+            World_Z = Math.sin(angle * 0.5) * radius;
+
+            document.getElementById("World_X_text").innerHTML = World_X.toFixed(2);
+            document.getElementById("World_Y_text").innerHTML = World_Y.toFixed(2);
+            document.getElementById("World_Z_text").innerHTML = World_Z.toFixed(2);
+
+            const World_X_inputRange = document.getElementById("World_X");
+            const World_Y_inputRange = document.getElementById("World_Y");
+            const World_Z_inputRange = document.getElementById("World_Z");
+
+            World_X_inputRange.value = World_X.toFixed(2);
+            World_Y_inputRange.value = World_Y.toFixed(2);
+            World_Z_inputRange.value = World_Z.toFixed(2);
+
+            angle += 0.01;
+
+            if (angle >= 2 * Math.PI) {
+                angle = 0;
+            }
+            if (ind) {
+                requestAnimationFrame(animate);
+            }
+        }
+
+        requestAnimationFrame(animate);
+    }
+
+    function triggerFileInput() {
+        var fileInput = document.getElementById("audioFileInput");
+        fileInput.click();
+    }
+
+    function changeAudio() {
+        var audio = document.getElementById("audio");
+        var source = document.getElementById("audioSource");
+        var fileInput = document.getElementById("audioFileInput");
+
+        var selectedFile = fileInput.files[0];
+        if (selectedFile) {
+            var fileReader = new FileReader();
+            fileReader.onload = function(event) {
+                source.src = event.target.result;
+                audio.load();
+                audio.play();
+            };
+            fileReader.readAsDataURL(selectedFile);
+        }
+    }
+
     $('#video_div').hide();
     document.querySelector("img").src = image_src;
     $(document).ready(function() {
@@ -136,7 +320,6 @@
         }
     });
 
-
     var input_x = document.getElementById("World_X");
     var input_y = document.getElementById("World_Y");
     var input_z = document.getElementById("World_Z");
@@ -144,19 +327,56 @@
     var input_f = document.getElementById("Field");
     var input_c = document.getElementById("c_distance");
     var input_co = document.getElementById("co_distance");
+    var input_cf = document.getElementById("centerFrequencyInput");
+    var input_qv = document.getElementById("Q_value");
+    var input_vo = document.getElementById("Volume");
+    var input_pr = document.getElementById("PlaybackRate");
+    var input_rv = document.getElementById("Radius");
+
+    input_rv.addEventListener("input", function() {
+        document.getElementById("Radius_text").innerHTML = this.value;
+        radius = this.value;
+    }, false);
+
+    input_pr.addEventListener("input", function() {
+        document.getElementById("PlaybackRate_text").innerHTML = this.value;
+        PlaybackRate = this.value;
+        draw();
+    }, false);
+
+    input_vo.addEventListener("input", function() {
+        document.getElementById("Volume_text").innerHTML = this.value;
+        Volume = this.value;
+        draw();
+    }, false);
+
+    input_cf.addEventListener("input", function() {
+        document.getElementById("centerFrequencyInput_text").innerHTML = this.value;
+        centerFrequencyInput = this.value;
+        draw();
+    }, false);
+
+    input_qv.addEventListener("input", function() {
+        document.getElementById("Q_value_text").innerHTML = this.value;
+        Q_value = this.value;
+        draw();
+    }, false);
 
     input_x.addEventListener("input", function() {
         World_X = this.value;
+        document.getElementById("World_X_text").innerHTML = this.value;
         draw();
     }, false);
 
     input_y.addEventListener("input", function() {
         World_Y = this.value;
+        document.getElementById("World_Y_text").innerHTML = this.value;
         draw();
     }, false);
 
     input_z.addEventListener("input", function() {
         World_Z = this.value;
+        document.getElementById("World_Z_text").innerHTML = this.value;
         draw();
     }, false);
 
